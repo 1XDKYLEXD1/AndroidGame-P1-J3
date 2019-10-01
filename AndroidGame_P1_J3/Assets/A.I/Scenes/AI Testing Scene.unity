@@ -522,8 +522,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_player: {fileID: 1497176392}
   m_nearbynode: 6
-  m_mediumnode: 7
-  m_farnode: 10
-  m_anywherenode: 6.5
+  m_mediumnode: 9
+  m_farnode: 12
+  m_anywherenode: 7
   m_fastestmovespeed: -4
-  m_slowestmovespeed: -1
+  m_slowestmovespeed: -2.5
+  m_fightdelay: 0.5
+  m_difficulty: 3
