@@ -65,16 +65,17 @@ public class AIBehaviour : MonoBehaviour
 
     bool m_canbehit;
 
-    [SerializeField] IAIDifficulty m_difficulty;
+    Animator m_myanimator;
 
+    [SerializeField] IAIDifficulty m_difficulty;
     IAIFightBehaviourState m_fightbehaviour;
     IAIFightingMoves m_fightingmovetouse;
-    IEntityAnimationState m_animationstate;
 
     void Awake()
     {
         m_myrgigibody = GetComponent<Rigidbody2D>();
-        m_animationstate = IEntityAnimationState.Idle;
+        m_myanimator = GetComponent<Animator>();
+        //m_animationstate = IEntityAnimationState.Idle;
     }
 
     void Update()
@@ -82,58 +83,84 @@ public class AIBehaviour : MonoBehaviour
         m_fightbehaviour = CalculateFightBehaviour(m_nearbynode, m_mediumnode, m_farnode, m_anywherenode);
 
         m_fightcounter += Time.deltaTime;
-        if(m_fightcounter > m_fightdelay) { m_fightingmovetouse = CalculateFightMove(m_fightbehaviour); m_fightcounter = 0; }
+        if (m_fightcounter > m_fightdelay)
+        {
+            m_fightingmovetouse = CalculateFightMove(m_fightbehaviour);
+
+            if (m_fightingmovetouse != IAIFightingMoves.Block)
+            {
+                m_canbehit = true;
+            }
+            else { m_canbehit = false; }
+
+            //Debug.Log("Distance till player: " + DistanceCheck(m_player));
+            Debug.Log("AI Fight distance: " + m_fightbehaviour);
+            Debug.Log("AI Fighting move: " + m_fightingmovetouse);
+
+            m_fightcounter = 0;
+        }
 
         switch (m_fightingmovetouse)
         {
             case IAIFightingMoves.Slice:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.SliceAttack);
                 break;
 
             case IAIFightingMoves.Stab:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.StabAttack);
                 break;
 
             case IAIFightingMoves.Block:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.Block);
                 break;
 
             case IAIFightingMoves.DashTowards:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.Dashing);
+                DashTowards(m_fastestmovespeed);
                 break;
 
             case IAIFightingMoves.DashAway:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.Dashing);
+                DashAway(m_fastestmovespeed);
                 break;
 
             case IAIFightingMoves.Jump:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.Jumping);
                 break;
 
             case IAIFightingMoves.JumpAttack:
-
+                StopMoving();
+                ChangeAnimationState(IEntityAnimationState.JumpAttack);
                 break;
 
             case IAIFightingMoves.WalkTowards:
                 WalkTowardsTarget(m_slowestmovespeed);
+                ChangeAnimationState(IEntityAnimationState.Walking);
                 break;
 
             case IAIFightingMoves.RunTowards:
                 RunTowardsTarget(m_fastestmovespeed);
+                ChangeAnimationState(IEntityAnimationState.Running);
                 break;
 
             case IAIFightingMoves.WalkAway:
                 WalkAwayFromTarget(m_slowestmovespeed);
+                ChangeAnimationState(IEntityAnimationState.Walking);
                 break;
 
             case IAIFightingMoves.RunAway:
                 RunAwayFromTarget(m_fastestmovespeed);
+                ChangeAnimationState(IEntityAnimationState.Running);
                 break;
         }
 
-        //Debug.Log("Distance till player: " + DistanceCheck(m_player));
-        Debug.Log("AI Fight distance: " + m_fightbehaviour);
-        Debug.Log("AI Fighting move: " + m_fightingmovetouse);
+        
     }
 
     float DistanceCheck(Transform target)
@@ -141,6 +168,15 @@ public class AIBehaviour : MonoBehaviour
         float distance = Vector2.Distance(transform.position, target.transform.position);
 
         return distance;
+    }
+
+    void DashTowards(float speed)
+    {
+        m_myrgigibody.velocity = new Vector2(speed + 10, 0);
+    }
+    void DashAway(float speed)
+    {
+        m_myrgigibody.velocity = new Vector2(-speed - 10, 0);
     }
 
     void RunTowardsTarget(float speed)
@@ -152,7 +188,7 @@ public class AIBehaviour : MonoBehaviour
         m_myrgigibody.velocity = new Vector2(speed, 0);
     }
 
-    void Stopmoving()
+    void StopMoving()
     {
         m_myrgigibody.velocity = Vector2.zero;
     }
@@ -164,6 +200,11 @@ public class AIBehaviour : MonoBehaviour
     void WalkAwayFromTarget(float speed)
     {
         m_myrgigibody.velocity = new Vector2(-speed, 0);
+    }
+
+    void ChangeAnimationState(IEntityAnimationState state)
+    {
+        m_myanimator.SetInteger("AnimationState", (int)state);
     }
 
     IAIFightBehaviourState CalculateFightBehaviour(float nearnode, float mednode, float farnode, float anywnode)
