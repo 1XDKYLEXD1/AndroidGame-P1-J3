@@ -245,6 +245,7 @@ MonoBehaviour:
   m_scoresubmitter: {fileID: 316128633}
   m_nameinputfield: {fileID: 388435426}
   m_namehelpertext: {fileID: 377140168}
+  m_pressptoplaytext: {fileID: 1836959332}
 --- !u!4 &204662033
 Transform:
   m_ObjectHideFlags: 0
@@ -1059,6 +1060,18 @@ BoxCollider2D:
     type: 3}
   m_PrefabInstance: {fileID: 181104155853151309}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1836959332 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4284505844631184957, guid: 05e6a502d83b40143a787717bf199f4e,
+    type: 3}
+  m_PrefabInstance: {fileID: 562373055004638890}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1938114038
 GameObject:
   m_ObjectHideFlags: 0
@@ -1375,7 +1388,7 @@ PrefabInstance:
     - target: {fileID: 3359610147386285985, guid: 05e6a502d83b40143a787717bf199f4e,
         type: 3}
       propertyPath: m_Name
-      value: Canvas
+      value: Game UI
       objectReference: {fileID: 0}
     - target: {fileID: 5451292144305588133, guid: 05e6a502d83b40143a787717bf199f4e,
         type: 3}
@@ -1390,12 +1403,12 @@ PrefabInstance:
     - target: {fileID: 8695211549873302370, guid: 05e6a502d83b40143a787717bf199f4e,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 14
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8695211549873302370, guid: 05e6a502d83b40143a787717bf199f4e,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 40.3
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 8695211549873302370, guid: 05e6a502d83b40143a787717bf199f4e,
         type: 3}

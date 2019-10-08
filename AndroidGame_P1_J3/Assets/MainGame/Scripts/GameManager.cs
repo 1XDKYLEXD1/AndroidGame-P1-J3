@@ -7,7 +7,7 @@ using System.IO;
 public class GameManager : MonoBehaviour
 {
     //[SerializeField] List<AIBehaviour> m_theai; THIS COMES LATER
-
+    
     [SerializeField] AIBehaviour m_ai1; //Change this to player
     [SerializeField] AIBehaviour m_ai2;
 
@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject m_scoresubmitter;
     [SerializeField] InputField m_nameinputfield;
     [SerializeField] Text m_namehelpertext;
+
+    [SerializeField] Text m_pressptoplaytext;
 
     int m_numberofwins;
     int m_finalscore;
@@ -63,12 +65,15 @@ public class GameManager : MonoBehaviour
         m_ai1.ChangeAnimationState(IEntityAnimationState.Idle);
         m_ai2.ChangeAnimationState(IEntityAnimationState.Idle);
 
+        m_pressptoplaytext.text = "Press 'P' to Start";
+
         while (!Input.GetKey(KeyCode.P))
         {
             yield return null;
         }
 
         m_countdown.SetActive(true);
+        m_pressptoplaytext.text = "";
         yield return new WaitForSeconds(m_countdown.GetComponent<Animator>().GetCurrentAnimatorClipInfo(0)[0].clip.length - 0.1f);
         m_countdown.SetActive(false);
 
@@ -158,11 +163,11 @@ public class GameManager : MonoBehaviour
 
         float delay;
 
-        if (m_numberofwins > 100) { delay = 0.1f; }
-        else if (m_numberofwins > 75) { delay = 0.2f; }
-        else if (m_numberofwins > 25) { delay = 0.3f; }
-        else if (m_numberofwins > 10) { delay = 0.5f; }
-        else { delay = 0.65f; }
+        if (m_numberofwins > 30) { delay = 0.05f; }
+        else if (m_numberofwins > 20) { delay = 0.1f; }
+        else if (m_numberofwins > 10) { delay = 0.2f; }
+        else if (m_numberofwins > 5) { delay = 0.5f; }
+        else { delay = 0.7f; }
 
         m_scoresubmitter.SetActive(true);
         
@@ -190,7 +195,7 @@ public class GameManager : MonoBehaviour
                 yield return null;
             }
 
-            m_namehelpertext.text = "Press enter to submit";
+            m_namehelpertext.text = "Press 'Enter' to submit";
 
             while (!Input.GetKey(KeyCode.Return))
             {
