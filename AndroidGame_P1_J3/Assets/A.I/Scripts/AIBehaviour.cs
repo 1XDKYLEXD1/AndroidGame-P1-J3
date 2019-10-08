@@ -75,6 +75,9 @@ public class AIBehaviour : MonoBehaviour
 
     Animator m_myanimator;
 
+    [SerializeField] BoxCollider2D m_slashattackhitbox;
+    [SerializeField] BoxCollider2D m_stabattackhitbox;
+
     [SerializeField] IAIDifficulty m_difficulty;
     IAIFightBehaviourState m_fightbehaviour;
     IAIFightingMoves m_fightingmovetouse;
@@ -83,110 +86,113 @@ public class AIBehaviour : MonoBehaviour
     {
         m_myrgigibody = GetComponent<Rigidbody2D>();
         m_myanimator = GetComponent<Animator>();
-        //m_onground = true;
-        //m_animationstate = IEntityAnimationState.Idle;
+        m_slashattackhitbox.enabled = false;
+        m_stabattackhitbox.enabled = false;
     }
 
     void Update()
     {
-        if (m_fightingmovetouse != IAIFightingMoves.SlashBlock)
+        if (m_inbattlemode == true)
         {
-            m_canbehitbyslash = true;
-        }
-        else { m_canbehitbyslash = false; }
 
-        if (m_fightingmovetouse != IAIFightingMoves.StabBlock)
-        {
-            m_canbehitbystab = true;
-        }
-        else { m_canbehitbystab = false; }
-
-        
-        m_fightbehaviour = CalculateFightBehaviour(m_nearbynode, m_mediumnode, m_farnode, m_anywherenode);
-
-        m_fightcounter += Time.deltaTime;
-        if (m_onground == true)
-        {
-            if (m_fightcounter > m_fightdelay)
+            if (m_fightingmovetouse != IAIFightingMoves.SlashBlock)
             {
-                m_fightingmovetouse = CalculateFightMove(m_fightbehaviour);
-
-                //Debug.Log("Distance till player: " + DistanceCheck(m_player));
-                Debug.Log("AI Fight distance: " + m_fightbehaviour);
-                Debug.Log("AI Fighting move: " + m_fightingmovetouse);
-
-                m_fightcounter = 0;
+                m_canbehitbyslash = true;
             }
-        }
+            else { m_canbehitbyslash = false; }
 
-        switch (m_fightingmovetouse)
-        {
-            case IAIFightingMoves.Slash:
-                StopMoving();
-                ChangeAnimationState(IEntityAnimationState.SlashAttack);
-                break;
+            if (m_fightingmovetouse != IAIFightingMoves.StabBlock)
+            {
+                m_canbehitbystab = true;
+            }
+            else { m_canbehitbystab = false; }
 
-            case IAIFightingMoves.Stab:
-                StopMoving();
-                ChangeAnimationState(IEntityAnimationState.StabAttack);
-                break;
+            m_fightbehaviour = CalculateFightBehaviour(m_nearbynode, m_mediumnode, m_farnode, m_anywherenode);
 
-            case IAIFightingMoves.SlashBlock:
-                StopMoving();
-                ChangeAnimationState(IEntityAnimationState.SlashBlock);
-                break;
-
-            case IAIFightingMoves.StabBlock:
-                StopMoving();
-                ChangeAnimationState(IEntityAnimationState.StabBlock);
-                break;
-
-            case IAIFightingMoves.DashTowards:
-                StopMoving();
-                DashTowards(m_fastestmovespeed);
-                ChangeAnimationState(IEntityAnimationState.Dashing);
-                break;
-
-            case IAIFightingMoves.DashAway:
-                StopMoving();
-                DashAway(m_fastestmovespeed);
-                ChangeAnimationState(IEntityAnimationState.Dashing);
-                break;
-
-            case IAIFightingMoves.Jump:
-                //StopMoving();
-                if (m_onground != false)
+            m_fightcounter += Time.deltaTime;
+            if (m_onground == true)
+            {
+                if (m_fightcounter > m_fightdelay)
                 {
-                    Jump(m_jumpspeed);
-                    m_onground = false;
+                    m_fightingmovetouse = CalculateFightMove(m_fightbehaviour);
+
+                    //Debug.Log("Distance till player: " + DistanceCheck(m_player));
+                    //Debug.Log("AI Fight distance: " + m_fightbehaviour);
+                    //Debug.Log("AI Fighting move: " + m_fightingmovetouse);
+
+                    m_fightcounter = 0;
                 }
-                ChangeAnimationState(IEntityAnimationState.Jumping);
-                break;
+            }
 
-            //case IAIFightingMoves.JumpAttack:
-            //StopMoving();
-            //ChangeAnimationState(IEntityAnimationState.JumpAttack);
-            //break;
+            switch (m_fightingmovetouse)
+            {
+                case IAIFightingMoves.Slash:
+                    StopMoving();
+                    ChangeAnimationState(IEntityAnimationState.SlashAttack);
+                    break;
 
-            case IAIFightingMoves.WalkTowards:
-                WalkTowardsTarget(m_slowestmovespeed);
-                ChangeAnimationState(IEntityAnimationState.Walking);
-                break;
+                case IAIFightingMoves.Stab:
+                    StopMoving();
+                    ChangeAnimationState(IEntityAnimationState.StabAttack);
+                    break;
 
-            //case IAIFightingMoves.RunTowards:
-            //RunTowardsTarget(m_fastestmovespeed);
-            //ChangeAnimationState(IEntityAnimationState.Running);
-            //break;
+                case IAIFightingMoves.SlashBlock:
+                    StopMoving();
+                    ChangeAnimationState(IEntityAnimationState.SlashBlock);
+                    break;
 
-            case IAIFightingMoves.WalkAway:
-                WalkAwayFromTarget(m_slowestmovespeed);
-                ChangeAnimationState(IEntityAnimationState.Walking);
-                break;
+                case IAIFightingMoves.StabBlock:
+                    StopMoving();
+                    ChangeAnimationState(IEntityAnimationState.StabBlock);
+                    break;
+
+                case IAIFightingMoves.DashTowards:
+                    StopMoving();
+                    DashTowards(m_fastestmovespeed);
+                    ChangeAnimationState(IEntityAnimationState.Dashing);
+                    break;
+
+                case IAIFightingMoves.DashAway:
+                    StopMoving();
+                    DashAway(m_fastestmovespeed);
+                    ChangeAnimationState(IEntityAnimationState.Dashing);
+                    break;
+
+                case IAIFightingMoves.Jump:
+                    //StopMoving();
+                    if (m_onground != false)
+                    {
+                        Jump(m_jumpspeed);
+                        m_onground = false;
+                    }
+                    ChangeAnimationState(IEntityAnimationState.Jumping);
+                    break;
+
+                //case IAIFightingMoves.JumpAttack:
+                    //StopMoving();
+                    //ChangeAnimationState(IEntityAnimationState.JumpAttack);
+                    //break;
+
+                case IAIFightingMoves.WalkTowards:
+                    WalkTowardsTarget(m_slowestmovespeed);
+                    ChangeAnimationState(IEntityAnimationState.Walking);
+                    break;
+
+                //case IAIFightingMoves.RunTowards:
+                    //RunTowardsTarget(m_fastestmovespeed);
+                    //ChangeAnimationState(IEntityAnimationState.Running);
+                    //break;
+
+                case IAIFightingMoves.WalkAway:
+                    WalkAwayFromTarget(m_slowestmovespeed);
+                    ChangeAnimationState(IEntityAnimationState.Walking);
+                    break;
 
                 //case IAIFightingMoves.RunAway:
-                //RunAwayFromTarget(m_fastestmovespeed);
-                //ChangeAnimationState(IEntityAnimationState.Running);
-                //break;
+                    //RunAwayFromTarget(m_fastestmovespeed);
+                    //ChangeAnimationState(IEntityAnimationState.Running);
+                    //break;
+            }
         }
     }
 
@@ -210,10 +216,11 @@ public class AIBehaviour : MonoBehaviour
     //{
     //    m_myrgigibody.velocity = new Vector2(speed, 0);
     //}
+
     void WalkTowardsTarget(float speed)
     {
         m_myrgigibody.velocity = new Vector2(speed, 0);
-        Debug.Log("AI Velocity: " + m_myrgigibody.velocity);
+        //Debug.Log("AI Velocity: " + m_myrgigibody.velocity);
     }
 
     void StopMoving()
@@ -225,6 +232,7 @@ public class AIBehaviour : MonoBehaviour
     //{
     //    m_myrgigibody.velocity = new Vector2(-speed, 0);
     //}
+
     void WalkAwayFromTarget(float speed)
     {
         m_myrgigibody.velocity = new Vector2(-speed, 0);
@@ -243,7 +251,7 @@ public class AIBehaviour : MonoBehaviour
         }
     }
 
-    void ChangeAnimationState(IEntityAnimationState state)
+    public void ChangeAnimationState(IEntityAnimationState state)
     {
         m_myanimator.SetInteger("AnimationState", (int)state);
     }
@@ -353,10 +361,10 @@ public class AIBehaviour : MonoBehaviour
                         return IAIFightingMoves.WalkTowards;
 
                     case IAIDifficulty.Expert:
-                        int expertrandomoutput = RandomNumberReturner(0, 2);
+                        int expertrandomoutput = RandomNumberReturner(0, 3);
 
                         if (expertrandomoutput == 0) { return IAIFightingMoves.WalkTowards; }
-                        else { return IAIFightingMoves.DashTowards; }
+                        else { Debug.Log("DASH FORWARD"); return IAIFightingMoves.DashTowards; }
                 }
                 break;
 
@@ -463,9 +471,6 @@ public class AIBehaviour : MonoBehaviour
         m_isdead = true;
     }
 
-    public bool CanBeHitBySlash { get { return m_canbehitbyslash; } }
-    public bool CanBeHitByStab { get { return m_canbehitbystab; } }
-
     public void IncreaseSlowSpeed(float amounttoincrease)
     {
         m_slowestmovespeed += amounttoincrease;
@@ -475,16 +480,61 @@ public class AIBehaviour : MonoBehaviour
         m_fastestmovespeed += amounttoincrease;
     }
 
-    //public void Hit()
 
-    public bool IsDead { get { return m_isdead; } set { m_isdead = value; } }
+    public void Hit(IAIFightingMoves attack)
+    {
+        Debug.Log(this.gameObject.name + " is HIT");
+
+        if (attack == IAIFightingMoves.Slash && m_canbehitbyslash != false)
+        {
+            Debug.Log(this.gameObject.name + " dead by Slash");
+            Die();
+        }
+        else if (attack == IAIFightingMoves.Stab && m_canbehitbystab != false)
+        {
+            Debug.Log(this.gameObject.name + " dead by Stab");
+            Die();
+        }
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        //Change to Player
+        if (collision.GetComponent<AIBehaviour>() != null)
+        {
+            collision.GetComponent<AIBehaviour>().Hit(m_fightingmovetouse);
+        }
+    }
 
     public void SetPosistion(Vector2 pos)
     {
         transform.position = pos;
     }
+    
+    public void SwitchEnableSlashHitbox() //If enabled then turn disable.If disabled then enable.
+    {
+        if(m_slashattackhitbox.enabled == false)
+        {
+            m_slashattackhitbox.enabled = true;
+        }
+        else { m_slashattackhitbox.enabled = false; }
+    }
+    public void SwitchEnableStabHitbox() //If enabled then turn disable. If disabled then enable.
+    {
+        if (m_stabattackhitbox.enabled == false)
+        {
+            m_stabattackhitbox.enabled = true;
+        }
+        else { m_stabattackhitbox.enabled = false; }
+    }
 
-    public IAIDifficulty AIDifficulty 
+    public BoxCollider2D SlashHitbox { get { return m_slashattackhitbox; } }
+    public BoxCollider2D StabHitbox { get { return m_stabattackhitbox; } }
+
+    public bool CanBeHitBySlash { get { return m_canbehitbyslash; } }
+    public bool CanBeHitByStab { get { return m_canbehitbystab; } }
+
+    public IAIDifficulty AIDifficulty
     {
         get { return m_difficulty; }
         set { m_difficulty = value; }
@@ -494,6 +544,12 @@ public class AIBehaviour : MonoBehaviour
     {
         get { return m_fightdelay; }
         set { m_fightdelay = value; }
+    }
+
+    public bool IsDead
+    {
+        get { return m_isdead; }
+        set { m_isdead = value; }
     }
 
     public bool InBattleMode
