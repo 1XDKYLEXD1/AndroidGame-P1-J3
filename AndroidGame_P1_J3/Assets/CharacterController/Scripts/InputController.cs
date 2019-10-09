@@ -5,17 +5,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
+
 public struct TouchInfo
 {
     
     public float StartTime;
     public Vector2 StartPos;
+    public bool IsWalk;
 
 }
 
 public class InputController : MonoBehaviour
 {
-    [SerializeField] private Text _debugText;
+    //[SerializeField] private Text _debugText;
 
     private string _debugPhaseEnded;
     private int _debugAmount;
@@ -39,11 +41,15 @@ public class InputController : MonoBehaviour
 
     [SerializeField] private int _minSlashDistance;
 
+    private IEntityAnimationState _state = IEntityAnimationState.Idle;
+    private Animator m_myanimator;
+
     private const float _delayBeforeWalk = 0.025f;
     // Start is called before the first frame update
     private void Start()
     {
         _currentInputs = new Dictionary<int, TouchInfo>();
+        m_myanimator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -51,14 +57,68 @@ public class InputController : MonoBehaviour
     {
         _timer += Time.deltaTime;
 
-      
-
+        
         if (_dash && (_timer - _dashStart < _dashTime))
         {
             transform.Translate(Vector3.right * _dashDir * _dashSpeed * Time.deltaTime);
         }
 
+#if UNITY_EDITOR
+        if(Input.GetKey(KeyCode.D))
+        {
+            Walk(1);
+            _state = IEntityAnimationState.Walking;
+            ChangeAnimationState(_state);
 
+        }
+        else if (Input.GetKey(KeyCode.A))
+        {
+            Walk(-1);
+            _state = IEntityAnimationState.Walking;
+            ChangeAnimationState(_state);
+        }
+
+
+
+        if (Input.GetKey(KeyCode.E))
+        {
+            Dash(1);
+            _state = IEntityAnimationState.Dashing;
+            ChangeAnimationState(_state);
+        }
+        else if (Input.GetKey(KeyCode.Q))
+        {
+            Dash(-1);
+            _state = IEntityAnimationState.Dashing;
+            ChangeAnimationState(_state);
+        }
+
+        if (Input.GetKey(KeyCode.O))
+        {
+            _state = IEntityAnimationState.SlashAttack;
+            ChangeAnimationState(_state);
+        }
+        else if (Input.GetKey(KeyCode.J))
+        {
+            _state = IEntityAnimationState.StabAttack;
+            ChangeAnimationState(_state);
+        }
+
+        if (Input.GetKey(KeyCode.Y))
+        {
+            _state = IEntityAnimationState.SlashBlock;
+            ChangeAnimationState(_state);
+        }
+        else if (Input.GetKey(KeyCode.H))
+        {
+            _state = IEntityAnimationState.StabBlock;
+            ChangeAnimationState(_state);
+        }
+
+
+#endif
+
+#if UNITY_ANDROID
 
 
         foreach (Touch touch in Input.touches)
@@ -70,7 +130,8 @@ public class InputController : MonoBehaviour
                 {
                     
                     StartPos = touch.position,
-                    StartTime = _timer
+                    StartTime = _timer,
+                    IsWalk = false
                 };
                 _currentInputs.Add(touch.fingerId,info);
             }
@@ -78,25 +139,38 @@ public class InputController : MonoBehaviour
             // walking touch
             if (touch.phase == TouchPhase.Stationary && _timer - _currentInputs[touch.fingerId].StartTime >_delayBeforeWalk)
             {
+                TouchInfo i = _currentInputs[touch.fingerId];
+                i.IsWalk = true;
+                _currentInputs[touch.fingerId] = i;
+
                 if (touch.position.x < Screen.width / 2)
                 {
                     // walk left
                     Walk(-1);
+                    _state = IEntityAnimationState.Walking;
+                    ChangeAnimationState(_state);
                 }
                 else
                 {
                     // walk right
                     Walk(1);
+                    _state = IEntityAnimationState.Walking;
+                    ChangeAnimationState(_state);
                 }
             }
 
             if (touch.phase == TouchPhase.Ended)
             {
                 
+
+                
                 // dashing
                 if (_timer - _currentInputs[touch.fingerId].StartTime < _countTapTime && NotMoved(touch))
                 {
-                    
+                    TouchInfo i = _currentInputs[touch.fingerId];
+                    i.IsWalk = false;
+                    _currentInputs[touch.fingerId] = i;
+
                     if (_firstTap)
                     {
                         _debugPhaseEnded = "has been in first tap :" + _debugAmount++ + "/" + (_timer - _currentInputs[touch.fingerId].StartTime);
@@ -106,13 +180,17 @@ public class InputController : MonoBehaviour
                             _debugPhaseEnded = _debugPhaseEnded + "\ndash left";
                             //dash left
                            Dash(-1);
+                           _state = IEntityAnimationState.Dashing;
+                           ChangeAnimationState(_state);
                         }
                         else
                         {
                             _debugPhaseEnded = _debugPhaseEnded + "\ndash right";
                             //dash right
                             Dash(1);
-                            
+                            _state = IEntityAnimationState.Dashing;
+                            ChangeAnimationState(_state);
+
                         }
                     }
                     else
@@ -126,6 +204,9 @@ public class InputController : MonoBehaviour
                 // slashing
                 if (Vector2.Distance(_currentInputs[touch.fingerId].StartPos, touch.position) > _minSlashDistance)
                 {
+                    TouchInfo i = _currentInputs[touch.fingerId];
+                    i.IsWalk = false;
+                    _currentInputs[touch.fingerId] = i;
                     Vector2 slashdirection = touch.position - _currentInputs[touch.fingerId].StartPos;
 
                     if (Mathf.Abs(slashdirection.x) > Mathf.Abs(slashdirection.y))
@@ -134,11 +215,15 @@ public class InputController : MonoBehaviour
                         {
                             _debugPhaseEnded = "swipe stab attack";
                             //stab attack
+                            _state = IEntityAnimationState.StabAttack;
+                            ChangeAnimationState(_state);
                         }
                         else
                         {
                             _debugPhaseEnded = "swipe stab block";
                             //stab Block
+                            _state = IEntityAnimationState.StabBlock;
+                            ChangeAnimationState(_state);
                         }
                     }
                     else
@@ -147,14 +232,24 @@ public class InputController : MonoBehaviour
                         {
                             _debugPhaseEnded = "swipe overhead attack";
                             //overhead attack
+                            _state = IEntityAnimationState.SlashAttack;
+                            ChangeAnimationState(_state);
                         }
                         else
                         {
                             _debugPhaseEnded = "swipe overhead block";
                             //overhead block
+                            _state = IEntityAnimationState.SlashBlock;
+                            ChangeAnimationState(_state);
                         }
                     }
                 }
+
+                if (_currentInputs[touch.fingerId].IsWalk)
+                {
+                    ChangeAnimationState(IEntityAnimationState.Idle);
+                }
+                
 
                 _currentInputs.Remove(touch.fingerId);
             }
@@ -165,7 +260,10 @@ public class InputController : MonoBehaviour
             _firstTap = false;
         }
 
-        _debugText.text = _debugPhaseEnded;
+        //_debugText.text = _debugPhaseEnded;
+
+
+#endif
     }
 
 
@@ -183,8 +281,14 @@ public class InputController : MonoBehaviour
 
     private void Dash(int dir)
     {
+
         _dash = true;
         _dashDir = dir;
         _dashStart = _timer;
+    }
+
+    public void ChangeAnimationState(IEntityAnimationState state)
+    {
+        m_myanimator.SetInteger("AnimationState", (int)state);
     }
 }
