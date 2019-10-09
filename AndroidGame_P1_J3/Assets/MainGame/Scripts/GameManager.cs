@@ -21,11 +21,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] InputField m_nameinputfield;
     [SerializeField] Text m_namehelpertext;
 
-    [SerializeField] Text m_pressptoplaytext;
+    [SerializeField] GameObject m_pressplaybutton;
 
     int m_numberofwins;
     int m_finalscore;
     bool m_isscoresubmitted;
+
+    bool m_pressplayed;
 
     void Start()
     {
@@ -53,6 +55,9 @@ public class GameManager : MonoBehaviour
         m_namehelpertext.gameObject.SetActive(false);
         m_scoresubmitter.SetActive(false);
 
+        m_pressplaybutton.SetActive(true);
+        m_pressplayed = false;
+
         m_numberofwins = 0;
         m_finalscore = 0;
         m_nameinputfield.text = "";
@@ -65,15 +70,16 @@ public class GameManager : MonoBehaviour
         m_ai1.ChangeAnimationState(IEntityAnimationState.Idle);
         m_ai2.ChangeAnimationState(IEntityAnimationState.Idle);
 
-        m_pressptoplaytext.text = "Press 'P' to Start";
+        //m_pressptoplaytext.text = "Press 'P' to Start";
 
-        while (!Input.GetKey(KeyCode.P))
+        while (!m_pressplayed)
         {
             yield return null;
         }
 
         m_countdown.SetActive(true);
-        m_pressptoplaytext.text = "";
+        m_pressplaybutton.SetActive(false);
+        //m_pressptoplaytext.text = "";
         yield return new WaitForSeconds(m_countdown.GetComponent<Animator>().GetCurrentAnimatorClipInfo(0)[0].clip.length - 0.1f);
         m_countdown.SetActive(false);
 
@@ -218,6 +224,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void PressPlay()
+    {
+        m_pressplayed = true;
+    }
+        
     class ObjectsToBeSaved
     {
         public string m_username;

@@ -94,7 +94,6 @@ public class AIBehaviour : MonoBehaviour
     {
         if (m_inbattlemode == true)
         {
-
             if (m_fightingmovetouse != IAIFightingMoves.SlashBlock)
             {
                 m_canbehitbyslash = true;
