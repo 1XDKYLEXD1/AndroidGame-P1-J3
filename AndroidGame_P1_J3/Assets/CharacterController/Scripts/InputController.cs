@@ -42,6 +42,7 @@ public class InputController : MonoBehaviour
     [SerializeField] private int _minSlashDistance;
 
     private IEntityAnimationState _state = IEntityAnimationState.Idle;
+    private IFightingMoves _currentFightingMove;
     private Animator m_myanimator;
 
     private bool m_inbattlemode;
@@ -76,6 +77,20 @@ public class InputController : MonoBehaviour
                 transform.Translate(Vector3.right * _dashDir * _dashSpeed * Time.deltaTime);
             }
 
+
+
+            if (_currentFightingMove != IFightingMoves.SlashBlock)
+            {
+                m_canbehitbyslash = true;
+            }
+            else { m_canbehitbyslash = false; }
+
+            if (_currentFightingMove != IFightingMoves.StabBlock)
+            {
+                m_canbehitbystab = true;
+            }
+            else { m_canbehitbystab = false; }
+
 #if UNITY_EDITOR
             if (Input.GetKey(KeyCode.D))
             {
@@ -108,22 +123,27 @@ public class InputController : MonoBehaviour
 
             if (Input.GetKey(KeyCode.O))
             {
+                SlashAttack();
                 _state = IEntityAnimationState.SlashAttack;
                 ChangeAnimationState(_state);
             }
             else if (Input.GetKey(KeyCode.J))
             {
+
+                StabAttack();
                 _state = IEntityAnimationState.StabAttack;
                 ChangeAnimationState(_state);
             }
 
             if (Input.GetKey(KeyCode.Y))
             {
+                SlashBlock();
                 _state = IEntityAnimationState.SlashBlock;
                 ChangeAnimationState(_state);
             }
             else if (Input.GetKey(KeyCode.H))
             {
+                StabBlock();
                 _state = IEntityAnimationState.StabBlock;
                 ChangeAnimationState(_state);
             }
@@ -186,8 +206,7 @@ public class InputController : MonoBehaviour
 
                     if (_firstTap)
                     {
-                        _debugPhaseEnded =
- "has been in first tap :" + _debugAmount++ + "/" + (_timer - _currentInputs[touch.fingerId].StartTime);
+                        _debugPhaseEnded = "has been in first tap :" + _debugAmount++ + "/" + (_timer - _currentInputs[touch.fingerId].StartTime);
                         _firstTap = false;
                         if (touch.position.x < Screen.width / 2)
                         {
@@ -231,6 +250,7 @@ public class InputController : MonoBehaviour
                             //stab attack
                             _state = IEntityAnimationState.StabAttack;
                             ChangeAnimationState(_state);
+                            StabAttack();
                         }
                         else
                         {
@@ -238,6 +258,7 @@ public class InputController : MonoBehaviour
                             //stab Block
                             _state = IEntityAnimationState.StabBlock;
                             ChangeAnimationState(_state);
+                            StabBlock();
                         }
                     }
                     else
@@ -248,6 +269,7 @@ public class InputController : MonoBehaviour
                             //overhead attack
                             _state = IEntityAnimationState.SlashAttack;
                             ChangeAnimationState(_state);
+                            SlashAttack();
                         }
                         else
                         {
@@ -255,6 +277,7 @@ public class InputController : MonoBehaviour
                             //overhead block
                             _state = IEntityAnimationState.SlashBlock;
                             ChangeAnimationState(_state);
+                            SlashBlock();
                         }
                     }
                 }
@@ -292,6 +315,7 @@ public class InputController : MonoBehaviour
     private void Walk(int dir)
     {
         transform.Translate(Vector3.right * dir * _walkSpeed * Time.deltaTime);
+        _currentFightingMove = dir > 0 ? IFightingMoves.WalkTowards : IFightingMoves.WalkAway;
     }
 
     private void Dash(int dir)
@@ -300,6 +324,28 @@ public class InputController : MonoBehaviour
         _dash = true;
         _dashDir = dir;
         _dashStart = _timer;
+        _currentFightingMove = dir > 0 ? IFightingMoves.DashTowards : IFightingMoves.DashAway;
+    }
+
+    private void SlashAttack()
+    {
+        _currentFightingMove = IFightingMoves.Slash;
+    }
+
+    private void SlashBlock()
+    {
+        _currentFightingMove = IFightingMoves.SlashBlock;
+        
+    }
+
+    private void StabAttack()
+    {
+        _currentFightingMove = IFightingMoves.Stab;
+    }
+
+    private void StabBlock()
+    {
+        _currentFightingMove = IFightingMoves.StabBlock;
     }
 
 
@@ -308,16 +354,16 @@ public class InputController : MonoBehaviour
         m_myanimator.SetInteger("AnimationState", (int)state);
     }
 
-    public void Hit(IAIFightingMoves attack)
+    public void Hit(IFightingMoves attack)
     {
         Debug.Log(this.gameObject.name + " is HIT");
 
-        if (attack == IAIFightingMoves.Slash && m_canbehitbyslash != false)
+        if (attack == IFightingMoves.Slash && m_canbehitbyslash != false)
         {
             Debug.Log(this.gameObject.name + " dead by Slash");
             Die();
         }
-        else if (attack == IAIFightingMoves.Stab && m_canbehitbystab != false)
+        else if (attack == IFightingMoves.Stab && m_canbehitbystab != false)
         {
             Debug.Log(this.gameObject.name + " dead by Stab");
             Die();
@@ -329,7 +375,7 @@ public class InputController : MonoBehaviour
         //Change to Player
         if (collision.GetComponent<AIBehaviour>() != null)
         {
-            collision.GetComponent<AIBehaviour>().Hit();
+            collision.GetComponent<AIBehaviour>().Hit(_currentFightingMove);
         }
     }
 
