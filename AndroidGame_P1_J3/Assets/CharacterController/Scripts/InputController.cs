@@ -42,7 +42,17 @@ public class InputController : MonoBehaviour
     [SerializeField] private int _minSlashDistance;
 
     private IEntityAnimationState _state = IEntityAnimationState.Idle;
+    private IFightingMoves _currentFightingMove;
     private Animator m_myanimator;
+
+    private bool m_inbattlemode;
+    private bool m_isdead;
+
+    bool m_canbehitbystab;
+    bool m_canbehitbyslash;
+
+    [SerializeField] BoxCollider2D m_slashattackhitbox;
+    [SerializeField] BoxCollider2D m_stabattackhitbox;
 
     private const float _delayBeforeWalk = 0.025f;
     // Start is called before the first frame update
@@ -57,63 +67,86 @@ public class InputController : MonoBehaviour
     {
         _timer += Time.deltaTime;
 
-        
-        if (_dash && (_timer - _dashStart < _dashTime))
+        if (m_inbattlemode)
         {
-            transform.Translate(Vector3.right * _dashDir * _dashSpeed * Time.deltaTime);
-        }
+
+
+
+            if (_dash && (_timer - _dashStart < _dashTime))
+            {
+                transform.Translate(Vector3.right * _dashDir * _dashSpeed * Time.deltaTime);
+            }
+
+
+
+            if (_currentFightingMove != IFightingMoves.SlashBlock)
+            {
+                m_canbehitbyslash = true;
+            }
+            else { m_canbehitbyslash = false; }
+
+            if (_currentFightingMove != IFightingMoves.StabBlock)
+            {
+                m_canbehitbystab = true;
+            }
+            else { m_canbehitbystab = false; }
 
 #if UNITY_EDITOR
-        if(Input.GetKey(KeyCode.D))
-        {
-            Walk(1);
-            _state = IEntityAnimationState.Walking;
-            ChangeAnimationState(_state);
+            if (Input.GetKey(KeyCode.D))
+            {
+                Walk(1);
+                _state = IEntityAnimationState.Walking;
+                ChangeAnimationState(_state);
 
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            Walk(-1);
-            _state = IEntityAnimationState.Walking;
-            ChangeAnimationState(_state);
-        }
+            }
+            else if (Input.GetKey(KeyCode.A))
+            {
+                Walk(-1);
+                _state = IEntityAnimationState.Walking;
+                ChangeAnimationState(_state);
+            }
 
 
 
-        if (Input.GetKey(KeyCode.E))
-        {
-            Dash(1);
-            _state = IEntityAnimationState.Dashing;
-            ChangeAnimationState(_state);
-        }
-        else if (Input.GetKey(KeyCode.Q))
-        {
-            Dash(-1);
-            _state = IEntityAnimationState.Dashing;
-            ChangeAnimationState(_state);
-        }
+            if (Input.GetKey(KeyCode.E))
+            {
+                Dash(1);
+                _state = IEntityAnimationState.Dashing;
+                ChangeAnimationState(_state);
+            }
+            else if (Input.GetKey(KeyCode.Q))
+            {
+                Dash(-1);
+                _state = IEntityAnimationState.Dashing;
+                ChangeAnimationState(_state);
+            }
 
-        if (Input.GetKey(KeyCode.O))
-        {
-            _state = IEntityAnimationState.SlashAttack;
-            ChangeAnimationState(_state);
-        }
-        else if (Input.GetKey(KeyCode.J))
-        {
-            _state = IEntityAnimationState.StabAttack;
-            ChangeAnimationState(_state);
-        }
+            if (Input.GetKey(KeyCode.O))
+            {
+                SlashAttack();
+                _state = IEntityAnimationState.SlashAttack;
+                ChangeAnimationState(_state);
+            }
+            else if (Input.GetKey(KeyCode.J))
+            {
 
-        if (Input.GetKey(KeyCode.Y))
-        {
-            _state = IEntityAnimationState.SlashBlock;
-            ChangeAnimationState(_state);
-        }
-        else if (Input.GetKey(KeyCode.H))
-        {
-            _state = IEntityAnimationState.StabBlock;
-            ChangeAnimationState(_state);
-        }
+                StabAttack();
+                _state = IEntityAnimationState.StabAttack;
+                ChangeAnimationState(_state);
+            }
+
+            if (Input.GetKey(KeyCode.Y))
+            {
+                SlashBlock();
+                _state = IEntityAnimationState.SlashBlock;
+                ChangeAnimationState(_state);
+            }
+            else if (Input.GetKey(KeyCode.H))
+            {
+                StabBlock();
+                _state = IEntityAnimationState.StabBlock;
+                ChangeAnimationState(_state);
+            }
 
 
 #endif
@@ -217,6 +250,7 @@ public class InputController : MonoBehaviour
                             //stab attack
                             _state = IEntityAnimationState.StabAttack;
                             ChangeAnimationState(_state);
+                            StabAttack();
                         }
                         else
                         {
@@ -224,6 +258,7 @@ public class InputController : MonoBehaviour
                             //stab Block
                             _state = IEntityAnimationState.StabBlock;
                             ChangeAnimationState(_state);
+                            StabBlock();
                         }
                     }
                     else
@@ -234,6 +269,7 @@ public class InputController : MonoBehaviour
                             //overhead attack
                             _state = IEntityAnimationState.SlashAttack;
                             ChangeAnimationState(_state);
+                            SlashAttack();
                         }
                         else
                         {
@@ -241,6 +277,7 @@ public class InputController : MonoBehaviour
                             //overhead block
                             _state = IEntityAnimationState.SlashBlock;
                             ChangeAnimationState(_state);
+                            SlashBlock();
                         }
                     }
                 }
@@ -264,6 +301,7 @@ public class InputController : MonoBehaviour
 
 
 #endif
+        }
     }
 
 
@@ -277,6 +315,7 @@ public class InputController : MonoBehaviour
     private void Walk(int dir)
     {
         transform.Translate(Vector3.right * dir * _walkSpeed * Time.deltaTime);
+        _currentFightingMove = dir > 0 ? IFightingMoves.WalkTowards : IFightingMoves.WalkAway;
     }
 
     private void Dash(int dir)
@@ -285,10 +324,108 @@ public class InputController : MonoBehaviour
         _dash = true;
         _dashDir = dir;
         _dashStart = _timer;
+        _currentFightingMove = dir > 0 ? IFightingMoves.DashTowards : IFightingMoves.DashAway;
     }
+
+    private void SlashAttack()
+    {
+        _currentFightingMove = IFightingMoves.Slash;
+    }
+
+    private void SlashBlock()
+    {
+        _currentFightingMove = IFightingMoves.SlashBlock;
+        
+    }
+
+    private void StabAttack()
+    {
+        _currentFightingMove = IFightingMoves.Stab;
+    }
+
+    private void StabBlock()
+    {
+        _currentFightingMove = IFightingMoves.StabBlock;
+    }
+
 
     public void ChangeAnimationState(IEntityAnimationState state)
     {
         m_myanimator.SetInteger("AnimationState", (int)state);
+    }
+
+    public void Hit(IFightingMoves attack)
+    {
+        Debug.Log(this.gameObject.name + " is HIT");
+
+        if (attack == IFightingMoves.Slash && m_canbehitbyslash != false)
+        {
+            Debug.Log(this.gameObject.name + " dead by Slash");
+            Die();
+        }
+        else if (attack == IFightingMoves.Stab && m_canbehitbystab != false)
+        {
+            Debug.Log(this.gameObject.name + " dead by Stab");
+            Die();
+        }
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        //Change to Player
+        if (collision.GetComponent<AIBehaviour>() != null)
+        {
+            collision.GetComponent<AIBehaviour>().Hit(_currentFightingMove);
+        }
+    }
+
+
+
+    public void SwitchEnableSlashHitbox() //If enabled then turn disable.If disabled then enable.
+    {
+        if (m_slashattackhitbox.enabled == false)
+        {
+            m_slashattackhitbox.enabled = true;
+        }
+        else { m_slashattackhitbox.enabled = false; }
+    }
+    public void SwitchEnableStabHitbox() //If enabled then turn disable. If disabled then enable.
+    {
+        if (m_stabattackhitbox.enabled == false)
+        {
+            m_stabattackhitbox.enabled = true;
+        }
+        else { m_stabattackhitbox.enabled = false; }
+    }
+
+    public BoxCollider2D SlashHitbox { get { return m_slashattackhitbox; } }
+    public BoxCollider2D StabHitbox { get { return m_stabattackhitbox; } }
+
+    public bool CanBeHitBySlash { get { return m_canbehitbyslash; } }
+    public bool CanBeHitByStab { get { return m_canbehitbystab; } }
+
+
+
+
+    public void SetPosistion(Vector2 pos)
+    {
+        transform.position = pos;
+    }
+
+    public void Die()
+    {
+        m_isdead = true;
+    }
+
+    public bool IsDead
+    {
+        get { return m_isdead; }
+        set { m_isdead = value; }
+    }
+
+    public bool InBattleMode
+    {
+        get { return m_inbattlemode; }
+        set { m_inbattlemode = value; }
     }
 }
