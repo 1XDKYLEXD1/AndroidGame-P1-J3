@@ -18,16 +18,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] Text m_scoretext;
 
     [SerializeField] GameObject m_scoresubmitter;
-    [SerializeField] InputField m_nameinputfield;
     [SerializeField] Text m_namehelpertext;
 
     [SerializeField] GameObject m_pressplaybutton;
+    [SerializeField] GameObject[] m_answerbuttons;
 
     int m_numberofwins;
     int m_finalscore;
-    bool m_isscoresubmitted;
-
+    
     bool m_pressplayed;
+
+    string m_submitscoreanswer;
 
     void Start()
     {
@@ -35,23 +36,22 @@ public class GameManager : MonoBehaviour
     }
 
     //UPDATE DEBUG USES!!! -- Delete if building
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.K)) //Kill Player
-        {
-            m_ai1.Die();
-        }
-        else if (Input.GetKeyDown(KeyCode.I)) //Kill AI
-        {
-            m_ai2.Die();
-        }
-    }
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.K)) //Kill Player
+    //    {
+    //        m_ai1.Die();
+    //    }
+    //    else if (Input.GetKeyDown(KeyCode.I)) //Kill AI
+    //    {
+    //        m_ai2.Die();
+    //    }
+    //}
 
     IEnumerator GameStart()
     {
+        StopCoroutine(GameOver());
         StopCoroutine(SubmitScore());
-        m_isscoresubmitted = false;
-        m_nameinputfield.gameObject.SetActive(false);
         m_namehelpertext.gameObject.SetActive(false);
         m_scoresubmitter.SetActive(false);
 
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
 
         m_numberofwins = 0;
         m_finalscore = 0;
-        m_nameinputfield.text = "";
+        m_submitscoreanswer = "";
         m_ai2.AIDifficulty = IAIDifficulty.Easy;
 
         m_ai1.SetPosistion(m_ai1startpos.position);
@@ -183,45 +183,48 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        //m_isscoresubmitted = false;
-        yield return SubmitScore();
+        for (int i = 0; i < m_answerbuttons.Length; i++)
+        {
+            m_answerbuttons[i].SetActive(true);
+        }
+
+        m_namehelpertext.text = "Submit Score?";
+        while (m_submitscoreanswer == "")
+        {
+            yield return null;
+        }
+
+        if (m_submitscoreanswer == "yes")
+        {
+            yield return StartCoroutine(SubmitScore());
+        }
+        else if (m_submitscoreanswer == "no")
+        {
+            yield return StartCoroutine(GameStart());
+        }
+        else { Debug.LogError("Something is wrong here..."); }
     }
 
     IEnumerator SubmitScore()
     {
-        Debug.Log("SUBMIT SCORE");
+        Debug.Log("SUBMITTING SCORE");
+        
+        GooglePlayManager.AddScoreToLeaderboard(SuddenDeathResources.leaderboard_sudden_death_leaderboard, m_finalscore);
 
-        if (m_isscoresubmitted == false)
-        {
-            while (m_nameinputfield.text == "")
-            {
-                m_namehelpertext.text = "Please enter your name";
-                m_nameinputfield.gameObject.SetActive(true);
-                m_namehelpertext.gameObject.SetActive(true);
-                yield return null;
-            }
+        yield return StartCoroutine(GameStart());
+        //ObjectsToBeSaved objtojson = new ObjectsToBeSaved
+        //{
+        //    m_username = m_nameinputfield.text,
+        //    m_score = m_finalscore
+        //};
 
-            m_namehelpertext.text = "Press 'Enter' to submit";
+        //string json = JsonUtility.ToJson(objtojson);
+        //File.WriteAllText(Application.dataPath + "/ScoreFrom_" + m_nameinputfield.text + ".txt", json);
+    }
 
-            while (!Input.GetKey(KeyCode.Return))
-            {
-                yield return null;
-            }
-
-            ObjectsToBeSaved objtojson = new ObjectsToBeSaved
-            {
-                m_username = m_nameinputfield.text,
-                m_score = m_finalscore
-            };
-
-            string json = JsonUtility.ToJson(objtojson);
-            File.WriteAllText(Application.dataPath + "/ScoreFrom_" + m_nameinputfield.text + ".txt", json);
-
-            m_isscoresubmitted = true;
-            m_nameinputfield.text = "";
-
-            yield return StartCoroutine(GameStart());
-        }
+    public void SubmitScoreAnswer(string answer)
+    {
+        m_submitscoreanswer = answer;
     }
 
     public void PressPlay()
@@ -229,9 +232,9 @@ public class GameManager : MonoBehaviour
         m_pressplayed = true;
     }
         
-    class ObjectsToBeSaved
-    {
-        public string m_username;
-        public int m_score;
-    }
+    //class ObjectsToBeSaved
+    //{
+    //    public string m_username;
+    //    public int m_score;
+    //}
 }
