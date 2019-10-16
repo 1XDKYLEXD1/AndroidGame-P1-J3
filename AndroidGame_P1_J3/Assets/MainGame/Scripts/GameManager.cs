@@ -7,7 +7,7 @@ using System.IO;
 public class GameManager : MonoBehaviour
 {
     //[SerializeField] List<AIBehaviour> m_theai; THIS COMES LATER
-
+    
     [SerializeField] AIBehaviour m_ai1; //Change this to player
     [SerializeField] AIBehaviour m_ai2;
 
@@ -18,12 +18,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] Text m_scoretext;
 
     [SerializeField] GameObject m_scoresubmitter;
-    [SerializeField] InputField m_nameinputfield;
     [SerializeField] Text m_namehelpertext;
+
+    [SerializeField] GameObject m_pressplaybutton;
+    [SerializeField] GameObject[] m_answerbuttons;
 
     int m_numberofwins;
     int m_finalscore;
-    bool m_isscoresubmitted;
+    
+    bool m_pressplayed;
+
+    string m_submitscoreanswer;
 
     void Start()
     {
@@ -31,29 +36,31 @@ public class GameManager : MonoBehaviour
     }
 
     //UPDATE DEBUG USES!!! -- Delete if building
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.K)) //Kill Player
-        {
-            m_ai1.Die();
-        }
-        else if (Input.GetKeyDown(KeyCode.I)) //Kill AI
-        {
-            m_ai2.Die();
-        }
-    }
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.K)) //Kill Player
+    //    {
+    //        m_ai1.Die();
+    //    }
+    //    else if (Input.GetKeyDown(KeyCode.I)) //Kill AI
+    //    {
+    //        m_ai2.Die();
+    //    }
+    //}
 
     IEnumerator GameStart()
     {
+        StopCoroutine(GameOver());
         StopCoroutine(SubmitScore());
-        m_isscoresubmitted = false;
-        m_nameinputfield.gameObject.SetActive(false);
         m_namehelpertext.gameObject.SetActive(false);
         m_scoresubmitter.SetActive(false);
 
+        m_pressplaybutton.SetActive(true);
+        m_pressplayed = false;
+
         m_numberofwins = 0;
         m_finalscore = 0;
-        m_nameinputfield.text = "";
+        m_submitscoreanswer = "";
         m_ai2.AIDifficulty = IAIDifficulty.Easy;
 
         m_ai1.SetPosistion(m_ai1startpos.position);
@@ -63,12 +70,16 @@ public class GameManager : MonoBehaviour
         m_ai1.ChangeAnimationState(IEntityAnimationState.Idle);
         m_ai2.ChangeAnimationState(IEntityAnimationState.Idle);
 
-        while (!Input.GetKey(KeyCode.P))
+        //m_pressptoplaytext.text = "Press 'P' to Start";
+
+        while (!m_pressplayed)
         {
             yield return null;
         }
 
         m_countdown.SetActive(true);
+        m_pressplaybutton.SetActive(false);
+        //m_pressptoplaytext.text = "";
         yield return new WaitForSeconds(m_countdown.GetComponent<Animator>().GetCurrentAnimatorClipInfo(0)[0].clip.length - 0.1f);
         m_countdown.SetActive(false);
 
@@ -158,11 +169,11 @@ public class GameManager : MonoBehaviour
 
         float delay;
 
-        if (m_numberofwins > 100) { delay = 0.1f; }
-        else if (m_numberofwins > 75) { delay = 0.2f; }
-        else if (m_numberofwins > 25) { delay = 0.3f; }
-        else if (m_numberofwins > 10) { delay = 0.5f; }
-        else { delay = 0.65f; }
+        if (m_numberofwins > 30) { delay = 0.05f; }
+        else if (m_numberofwins > 20) { delay = 0.1f; }
+        else if (m_numberofwins > 10) { delay = 0.2f; }
+        else if (m_numberofwins > 5) { delay = 0.5f; }
+        else { delay = 0.7f; }
 
         m_scoresubmitter.SetActive(true);
         
@@ -172,50 +183,58 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        //m_isscoresubmitted = false;
-        yield return SubmitScore();
+        for (int i = 0; i < m_answerbuttons.Length; i++)
+        {
+            m_answerbuttons[i].SetActive(true);
+        }
+
+        m_namehelpertext.text = "Submit Score?";
+        while (m_submitscoreanswer == "")
+        {
+            yield return null;
+        }
+
+        if (m_submitscoreanswer == "yes")
+        {
+            yield return StartCoroutine(SubmitScore());
+        }
+        else if (m_submitscoreanswer == "no")
+        {
+            yield return StartCoroutine(GameStart());
+        }
+        else { Debug.LogError("Something is wrong here..."); }
     }
 
     IEnumerator SubmitScore()
     {
-        Debug.Log("SUBMIT SCORE");
+        Debug.Log("SUBMITTING SCORE");
+        
+        GooglePlayManager.AddScoreToLeaderboard(SuddenDeathResources.leaderboard_sudden_death_leaderboard, m_finalscore);
 
-        if (m_isscoresubmitted == false)
-        {
-            while (m_nameinputfield.text == "")
-            {
-                m_namehelpertext.text = "Please enter your name";
-                m_nameinputfield.gameObject.SetActive(true);
-                m_namehelpertext.gameObject.SetActive(true);
-                yield return null;
-            }
+        yield return StartCoroutine(GameStart());
+        //ObjectsToBeSaved objtojson = new ObjectsToBeSaved
+        //{
+        //    m_username = m_nameinputfield.text,
+        //    m_score = m_finalscore
+        //};
 
-            m_namehelpertext.text = "Press enter to submit";
-
-            while (!Input.GetKey(KeyCode.Return))
-            {
-                yield return null;
-            }
-
-            ObjectsToBeSaved objtojson = new ObjectsToBeSaved
-            {
-                m_username = m_nameinputfield.text,
-                m_score = m_finalscore
-            };
-
-            string json = JsonUtility.ToJson(objtojson);
-            File.WriteAllText(Application.dataPath + "/ScoreFrom_" + m_nameinputfield.text + ".txt", json);
-
-            m_isscoresubmitted = true;
-            m_nameinputfield.text = "";
-
-            yield return StartCoroutine(GameStart());
-        }
+        //string json = JsonUtility.ToJson(objtojson);
+        //File.WriteAllText(Application.dataPath + "/ScoreFrom_" + m_nameinputfield.text + ".txt", json);
     }
 
-    class ObjectsToBeSaved
+    public void SubmitScoreAnswer(string answer)
     {
-        public string m_username;
-        public int m_score;
+        m_submitscoreanswer = answer;
     }
+
+    public void PressPlay()
+    {
+        m_pressplayed = true;
+    }
+        
+    //class ObjectsToBeSaved
+    //{
+    //    public string m_username;
+    //    public int m_score;
+    //}
 }

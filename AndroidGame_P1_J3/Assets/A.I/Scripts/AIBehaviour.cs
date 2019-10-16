@@ -24,7 +24,7 @@ public enum IEntityAnimationState
     //Running,
 };
 
-public enum IAIFightingMoves
+public enum IFightingMoves
 {
     WalkTowards,
     WalkAway,
@@ -80,7 +80,7 @@ public class AIBehaviour : MonoBehaviour
 
     [SerializeField] IAIDifficulty m_difficulty;
     IAIFightBehaviourState m_fightbehaviour;
-    IAIFightingMoves m_fightingmovetouse;
+    IFightingMoves m_fightingmovetouse;
 
     void Awake()
     {
@@ -94,14 +94,13 @@ public class AIBehaviour : MonoBehaviour
     {
         if (m_inbattlemode == true)
         {
-
-            if (m_fightingmovetouse != IAIFightingMoves.SlashBlock)
+            if (m_fightingmovetouse != IFightingMoves.SlashBlock)
             {
                 m_canbehitbyslash = true;
             }
             else { m_canbehitbyslash = false; }
 
-            if (m_fightingmovetouse != IAIFightingMoves.StabBlock)
+            if (m_fightingmovetouse != IFightingMoves.StabBlock)
             {
                 m_canbehitbystab = true;
             }
@@ -126,39 +125,39 @@ public class AIBehaviour : MonoBehaviour
 
             switch (m_fightingmovetouse)
             {
-                case IAIFightingMoves.Slash:
+                case IFightingMoves.Slash:
                     StopMoving();
                     ChangeAnimationState(IEntityAnimationState.SlashAttack);
                     break;
 
-                case IAIFightingMoves.Stab:
+                case IFightingMoves.Stab:
                     StopMoving();
                     ChangeAnimationState(IEntityAnimationState.StabAttack);
                     break;
 
-                case IAIFightingMoves.SlashBlock:
+                case IFightingMoves.SlashBlock:
                     StopMoving();
                     ChangeAnimationState(IEntityAnimationState.SlashBlock);
                     break;
 
-                case IAIFightingMoves.StabBlock:
+                case IFightingMoves.StabBlock:
                     StopMoving();
                     ChangeAnimationState(IEntityAnimationState.StabBlock);
                     break;
 
-                case IAIFightingMoves.DashTowards:
+                case IFightingMoves.DashTowards:
                     StopMoving();
                     DashTowards(m_fastestmovespeed);
                     ChangeAnimationState(IEntityAnimationState.Dashing);
                     break;
 
-                case IAIFightingMoves.DashAway:
+                case IFightingMoves.DashAway:
                     StopMoving();
                     DashAway(m_fastestmovespeed);
                     ChangeAnimationState(IEntityAnimationState.Dashing);
                     break;
 
-                case IAIFightingMoves.Jump:
+                case IFightingMoves.Jump:
                     //StopMoving();
                     if (m_onground != false)
                     {
@@ -173,7 +172,7 @@ public class AIBehaviour : MonoBehaviour
                     //ChangeAnimationState(IEntityAnimationState.JumpAttack);
                     //break;
 
-                case IAIFightingMoves.WalkTowards:
+                case IFightingMoves.WalkTowards:
                     WalkTowardsTarget(m_slowestmovespeed);
                     ChangeAnimationState(IEntityAnimationState.Walking);
                     break;
@@ -183,7 +182,7 @@ public class AIBehaviour : MonoBehaviour
                     //ChangeAnimationState(IEntityAnimationState.Running);
                     //break;
 
-                case IAIFightingMoves.WalkAway:
+                case IFightingMoves.WalkAway:
                     WalkAwayFromTarget(m_slowestmovespeed);
                     ChangeAnimationState(IEntityAnimationState.Walking);
                     break;
@@ -296,7 +295,7 @@ public class AIBehaviour : MonoBehaviour
         }
     }
 
-    IAIFightingMoves CalculateFightMove(IAIFightBehaviourState currentstate)
+    IFightingMoves CalculateFightMove(IAIFightBehaviourState currentstate)
     {
         switch (currentstate) // Calculates the moves that the AI is going to use based on his difficulty and distance.
         {
@@ -307,43 +306,43 @@ public class AIBehaviour : MonoBehaviour
                     case IAIDifficulty.Easy:
                         int easyrandomoutput = RandomNumberReturner(0, 3);
 
-                        if (easyrandomoutput == 0) { return IAIFightingMoves.SlashBlock; }
-                        else if (easyrandomoutput == 1) { return IAIFightingMoves.Stab; }
-                        else if (easyrandomoutput == 2) { return IAIFightingMoves.WalkTowards; }
-                        else { return IAIFightingMoves.StabBlock; }
+                        if (easyrandomoutput == 0) { return IFightingMoves.SlashBlock; }
+                        else if (easyrandomoutput == 1) { return IFightingMoves.Stab; }
+                        else if (easyrandomoutput == 2) { return IFightingMoves.WalkTowards; }
+                        else { return IFightingMoves.StabBlock; }
 
                     case IAIDifficulty.Medium:
                         int mediumrandomoutput = RandomNumberReturner(0, 6);
 
-                        if (mediumrandomoutput == 0) { return IAIFightingMoves.Slash; }
-                        else if (mediumrandomoutput == 1) { return IAIFightingMoves.Stab; }
-                        else if (mediumrandomoutput == 2) { return IAIFightingMoves.SlashBlock; }
-                        else if (mediumrandomoutput == 3) { return IAIFightingMoves.WalkTowards; }
-                        else if (mediumrandomoutput == 4) { return IAIFightingMoves.WalkAway; }
-                        else if (mediumrandomoutput == 5) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.Jump; }
+                        if (mediumrandomoutput == 0) { return IFightingMoves.Slash; }
+                        else if (mediumrandomoutput == 1) { return IFightingMoves.Stab; }
+                        else if (mediumrandomoutput == 2) { return IFightingMoves.SlashBlock; }
+                        else if (mediumrandomoutput == 3) { return IFightingMoves.WalkTowards; }
+                        else if (mediumrandomoutput == 4) { return IFightingMoves.WalkAway; }
+                        else if (mediumrandomoutput == 5) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.Jump; }
 
                     case IAIDifficulty.Hard:
                         int hardrandomoutput = RandomNumberReturner(0, 5);
 
-                        if (hardrandomoutput == 0) { return IAIFightingMoves.Slash; }
-                        else if (hardrandomoutput == 1) { return IAIFightingMoves.Stab; }
-                        else if (hardrandomoutput == 2) { return IAIFightingMoves.SlashBlock; }
-                        else if (hardrandomoutput == 3) { return IAIFightingMoves.Jump; }
-                        else if (hardrandomoutput == 4) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.DashTowards; }
+                        if (hardrandomoutput == 0) { return IFightingMoves.Slash; }
+                        else if (hardrandomoutput == 1) { return IFightingMoves.Stab; }
+                        else if (hardrandomoutput == 2) { return IFightingMoves.SlashBlock; }
+                        else if (hardrandomoutput == 3) { return IFightingMoves.Jump; }
+                        else if (hardrandomoutput == 4) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.DashTowards; }
 
                     case IAIDifficulty.Expert:
                         int expertrandomoutput = RandomNumberReturner(0, 7);
 
-                        if (expertrandomoutput == 0) { return IAIFightingMoves.Slash; }
-                        else if (expertrandomoutput == 1) { return IAIFightingMoves.Stab; }
-                        else if (expertrandomoutput == 2) { return IAIFightingMoves.SlashBlock; }
-                        else if (expertrandomoutput == 3) { return IAIFightingMoves.Jump; }
-                        else if (expertrandomoutput == 4) { return IAIFightingMoves.StabBlock; }
-                        else if (expertrandomoutput == 5) { return IAIFightingMoves.WalkAway; }
-                        else if (expertrandomoutput == 6) { return IAIFightingMoves.DashTowards; }
-                        else { return IAIFightingMoves.DashAway; }
+                        if (expertrandomoutput == 0) { return IFightingMoves.Slash; }
+                        else if (expertrandomoutput == 1) { return IFightingMoves.Stab; }
+                        else if (expertrandomoutput == 2) { return IFightingMoves.SlashBlock; }
+                        else if (expertrandomoutput == 3) { return IFightingMoves.Jump; }
+                        else if (expertrandomoutput == 4) { return IFightingMoves.StabBlock; }
+                        else if (expertrandomoutput == 5) { return IFightingMoves.WalkAway; }
+                        else if (expertrandomoutput == 6) { return IFightingMoves.DashTowards; }
+                        else { return IFightingMoves.DashAway; }
                 }
                 break;
 
@@ -352,19 +351,19 @@ public class AIBehaviour : MonoBehaviour
                 switch (m_difficulty)
                 {
                     case IAIDifficulty.Easy:
-                        return IAIFightingMoves.WalkTowards;
+                        return IFightingMoves.WalkTowards;
 
                     case IAIDifficulty.Medium:
-                        return IAIFightingMoves.WalkTowards;
+                        return IFightingMoves.WalkTowards;
 
                     case IAIDifficulty.Hard:
-                        return IAIFightingMoves.WalkTowards;
+                        return IFightingMoves.WalkTowards;
 
                     case IAIDifficulty.Expert:
                         int expertrandomoutput = RandomNumberReturner(0, 3);
 
-                        if (expertrandomoutput == 0) { return IAIFightingMoves.WalkTowards; }
-                        else { Debug.Log("DASH FORWARD"); return IAIFightingMoves.DashTowards; }
+                        if (expertrandomoutput == 0) { return IFightingMoves.WalkTowards; }
+                        else { Debug.Log("DASH FORWARD"); return IFightingMoves.DashTowards; }
                 }
                 break;
 
@@ -375,36 +374,36 @@ public class AIBehaviour : MonoBehaviour
                     case IAIDifficulty.Easy:
                         int easyrandomoutput = RandomNumberReturner(0, 3);
 
-                        if (easyrandomoutput == 0) { return IAIFightingMoves.WalkTowards; }
-                        else if (easyrandomoutput == 1) { return IAIFightingMoves.SlashBlock; }
-                        else if (easyrandomoutput == 2) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.Jump; }
+                        if (easyrandomoutput == 0) { return IFightingMoves.WalkTowards; }
+                        else if (easyrandomoutput == 1) { return IFightingMoves.SlashBlock; }
+                        else if (easyrandomoutput == 2) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.Jump; }
 
                     case IAIDifficulty.Medium:
                         int mediumrandomoutput = RandomNumberReturner(0, 3);
 
-                        if (mediumrandomoutput == 0) { return IAIFightingMoves.WalkTowards; }
-                        else if (mediumrandomoutput == 1) { return IAIFightingMoves.WalkAway; }
-                        else if (mediumrandomoutput == 2) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.SlashBlock; }
+                        if (mediumrandomoutput == 0) { return IFightingMoves.WalkTowards; }
+                        else if (mediumrandomoutput == 1) { return IFightingMoves.WalkAway; }
+                        else if (mediumrandomoutput == 2) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.SlashBlock; }
 
                     case IAIDifficulty.Hard:
                         int hardrandomoutput = RandomNumberReturner(0, 5);
 
-                        if (hardrandomoutput == 0) { return IAIFightingMoves.DashTowards; }
-                        else if (hardrandomoutput == 1) { return IAIFightingMoves.WalkAway; }
-                        else if (hardrandomoutput == 2) { return IAIFightingMoves.WalkTowards; }
-                        else if (hardrandomoutput == 3) { return IAIFightingMoves.Stab; }
-                        else if (hardrandomoutput == 4) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.SlashBlock; }
+                        if (hardrandomoutput == 0) { return IFightingMoves.DashTowards; }
+                        else if (hardrandomoutput == 1) { return IFightingMoves.WalkAway; }
+                        else if (hardrandomoutput == 2) { return IFightingMoves.WalkTowards; }
+                        else if (hardrandomoutput == 3) { return IFightingMoves.Stab; }
+                        else if (hardrandomoutput == 4) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.SlashBlock; }
 
                     case IAIDifficulty.Expert:
                         int expertrandomoutput = RandomNumberReturner(0, 4);
 
-                        if (expertrandomoutput == 1) { return IAIFightingMoves.DashAway; }
-                        else if (expertrandomoutput == 2) { return IAIFightingMoves.WalkAway; }
-                        else if (expertrandomoutput == 3) { return IAIFightingMoves.Slash; }
-                        else { return IAIFightingMoves.SlashBlock; }
+                        if (expertrandomoutput == 1) { return IFightingMoves.DashAway; }
+                        else if (expertrandomoutput == 2) { return IFightingMoves.WalkAway; }
+                        else if (expertrandomoutput == 3) { return IFightingMoves.Slash; }
+                        else { return IFightingMoves.SlashBlock; }
 
                 }
                 break;
@@ -416,48 +415,48 @@ public class AIBehaviour : MonoBehaviour
                     case IAIDifficulty.Easy:
                         int easyrandomoutput = RandomNumberReturner(0, 4);
 
-                        if (easyrandomoutput == 0) { return IAIFightingMoves.WalkAway; }
-                        if (easyrandomoutput == 1) { return IAIFightingMoves.Stab; }
-                        if (easyrandomoutput == 2) { return IAIFightingMoves.SlashBlock; }
-                        if (easyrandomoutput == 3) { return IAIFightingMoves.Jump; }
-                        else return IAIFightingMoves.StabBlock;
+                        if (easyrandomoutput == 0) { return IFightingMoves.WalkAway; }
+                        if (easyrandomoutput == 1) { return IFightingMoves.Stab; }
+                        if (easyrandomoutput == 2) { return IFightingMoves.SlashBlock; }
+                        if (easyrandomoutput == 3) { return IFightingMoves.Jump; }
+                        else return IFightingMoves.StabBlock;
 
                     case IAIDifficulty.Medium:
                         int mediumrandomoutput = RandomNumberReturner(0, 7);
 
-                        if (mediumrandomoutput == 0) { return IAIFightingMoves.WalkAway; }
-                        else if (mediumrandomoutput == 1) { return IAIFightingMoves.Slash; }
-                        else if (mediumrandomoutput == 2 || mediumrandomoutput == 3 || mediumrandomoutput == 4) { return IAIFightingMoves.Stab; }
-                        else if (mediumrandomoutput == 5) { return IAIFightingMoves.StabBlock; }
-                        else if (mediumrandomoutput == 6) { return IAIFightingMoves.SlashBlock; }
-                        else { return IAIFightingMoves.Jump; }
+                        if (mediumrandomoutput == 0) { return IFightingMoves.WalkAway; }
+                        else if (mediumrandomoutput == 1) { return IFightingMoves.Slash; }
+                        else if (mediumrandomoutput == 2 || mediumrandomoutput == 3 || mediumrandomoutput == 4) { return IFightingMoves.Stab; }
+                        else if (mediumrandomoutput == 5) { return IFightingMoves.StabBlock; }
+                        else if (mediumrandomoutput == 6) { return IFightingMoves.SlashBlock; }
+                        else { return IFightingMoves.Jump; }
 
                     case IAIDifficulty.Hard:
                         int hardrandomoutput = RandomNumberReturner(0, 5);
 
-                        if (hardrandomoutput == 0) { return IAIFightingMoves.WalkAway; }
-                        else if (hardrandomoutput == 1) { return IAIFightingMoves.SlashBlock; }
-                        else if (hardrandomoutput == 2 || hardrandomoutput == 3) { return IAIFightingMoves.DashAway; }
-                        else if (hardrandomoutput == 4) { return IAIFightingMoves.Stab; }
-                        else if (hardrandomoutput == 1) { return IAIFightingMoves.StabBlock; }
-                        else { return IAIFightingMoves.Slash; }
+                        if (hardrandomoutput == 0) { return IFightingMoves.WalkAway; }
+                        else if (hardrandomoutput == 1) { return IFightingMoves.SlashBlock; }
+                        else if (hardrandomoutput == 2 || hardrandomoutput == 3) { return IFightingMoves.DashAway; }
+                        else if (hardrandomoutput == 4) { return IFightingMoves.Stab; }
+                        else if (hardrandomoutput == 1) { return IFightingMoves.StabBlock; }
+                        else { return IFightingMoves.Slash; }
 
 
                     case IAIDifficulty.Expert:
                         int expertrandomoutput = RandomNumberReturner(0, 12);
 
-                        if (expertrandomoutput == 0) { return IAIFightingMoves.WalkAway; }
-                        else if (expertrandomoutput == 1 || expertrandomoutput == 2 || expertrandomoutput == 3) { return IAIFightingMoves.Stab; }
-                        else if (expertrandomoutput == 4 || expertrandomoutput == 5 || expertrandomoutput == 6) { return IAIFightingMoves.Slash; }
-                        else if (expertrandomoutput == 7 || expertrandomoutput == 8) { return IAIFightingMoves.SlashBlock; } //Make it based on what the player does
-                        else if (expertrandomoutput == 9 || expertrandomoutput == 10) { return IAIFightingMoves.StabBlock; } //Make it based on what the player does
-                        else if (expertrandomoutput == 11 || expertrandomoutput == 12) { return IAIFightingMoves.DashAway; }
-                        else { return IAIFightingMoves.DashAway; }
+                        if (expertrandomoutput == 0) { return IFightingMoves.WalkAway; }
+                        else if (expertrandomoutput == 1 || expertrandomoutput == 2 || expertrandomoutput == 3) { return IFightingMoves.Stab; }
+                        else if (expertrandomoutput == 4 || expertrandomoutput == 5 || expertrandomoutput == 6) { return IFightingMoves.Slash; }
+                        else if (expertrandomoutput == 7 || expertrandomoutput == 8) { return IFightingMoves.SlashBlock; } //Make it based on what the player does
+                        else if (expertrandomoutput == 9 || expertrandomoutput == 10) { return IFightingMoves.StabBlock; } //Make it based on what the player does
+                        else if (expertrandomoutput == 11 || expertrandomoutput == 12) { return IFightingMoves.DashAway; }
+                        else { return IFightingMoves.DashAway; }
                 }
                 break;
 
         }
-        return IAIFightingMoves.WalkAway;
+        return IFightingMoves.WalkAway;
     }
 
     int RandomNumberReturner(int min, int max)
@@ -481,16 +480,16 @@ public class AIBehaviour : MonoBehaviour
     }
 
 
-    public void Hit(IAIFightingMoves attack)
+    public void Hit(IFightingMoves attack)
     {
         Debug.Log(this.gameObject.name + " is HIT");
 
-        if (attack == IAIFightingMoves.Slash && m_canbehitbyslash != false)
+        if (attack == IFightingMoves.Slash && m_canbehitbyslash != false)
         {
             Debug.Log(this.gameObject.name + " dead by Slash");
             Die();
         }
-        else if (attack == IAIFightingMoves.Stab && m_canbehitbystab != false)
+        else if (attack == IFightingMoves.Stab && m_canbehitbystab != false)
         {
             Debug.Log(this.gameObject.name + " dead by Stab");
             Die();
