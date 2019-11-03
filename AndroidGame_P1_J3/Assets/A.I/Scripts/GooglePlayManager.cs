@@ -34,6 +34,7 @@ public class GooglePlayManager : MonoBehaviour
     {
         Social.ShowAchievementsUI();
     }
+
     #endregion
 
     #region Leaderboards
@@ -41,6 +42,11 @@ public class GooglePlayManager : MonoBehaviour
     public static void AddScoreToLeaderboard(string leaderboardID, long score)
     {
         Social.ReportScore(score, leaderboardID, success => { });
+    }
+
+    public static void ShowLeaderboard()
+    {
+        Social.ShowLeaderboardUI();
     }
 
     #endregion

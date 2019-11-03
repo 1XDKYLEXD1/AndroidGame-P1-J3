@@ -494,14 +494,14 @@ public class AIBehaviour : MonoBehaviour
             Debug.Log(this.gameObject.name + " dead by Stab");
             Die();
         }
+        else { Debug.Log(attack + " < CURRENT STATE!\nCan be hit by slash & stab > " + m_canbehitbyslash + " & " + m_canbehitbystab); Debug.LogError("NOT REGISTERED ATTACK! Pls look in code."); }
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        //Change to Player
-        if (collision.GetComponent<AIBehaviour>() != null)
+        if (collision.GetComponent<InputController>() != null)
         {
-            collision.GetComponent<AIBehaviour>().Hit(m_fightingmovetouse);
+            collision.GetComponent<InputController>().Hit(m_fightingmovetouse);
         }
     }
 
