@@ -43,7 +43,7 @@ public class InputController : MonoBehaviour
 
     private IEntityAnimationState _state = IEntityAnimationState.Idle;
     private IFightingMoves _currentFightingMove;
-    private Animator m_myanimator;
+    [SerializeField] Animator m_myanimator;
 
     private bool m_inbattlemode;
     private bool m_isdead;
@@ -59,7 +59,7 @@ public class InputController : MonoBehaviour
     private void Start()
     {
         _currentInputs = new Dictionary<int, TouchInfo>();
-        m_myanimator = GetComponent<Animator>();
+        //m_myanimator = GetComponent<Animator>();
     }
 
     // Update is called once per frame

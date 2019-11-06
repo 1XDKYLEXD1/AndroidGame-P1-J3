@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] GameObject m_pressplaybutton;
     [SerializeField] GameObject[] m_answerbuttons;
+    [SerializeField] GameObject[] m_gpshowbuttons;
 
     int m_numberofwins;
     int m_finalscore;
@@ -59,6 +60,7 @@ public class GameManager : MonoBehaviour
         for (int b = 0; b < m_answerbuttons.Length; b++)
         {
             m_answerbuttons[b].SetActive(false);
+            m_gpshowbuttons[b].SetActive(true);
         }
 
         m_pressplaybutton.SetActive(true);
@@ -69,10 +71,6 @@ public class GameManager : MonoBehaviour
         m_submitscoreanswer = "";
         m_ai.AIDifficulty = IAIDifficulty.Easy;
 
-        m_playercontroller.SetPosistion(m_playerstartpos.position);
-        m_ai.SetPosistion(m_aistartpos.position);
-        m_playercontroller.IsDead = false;
-        m_ai.IsDead = false;
         m_playercontroller.ChangeAnimationState(IEntityAnimationState.Idle);
         m_ai.ChangeAnimationState(IEntityAnimationState.Idle);
 
@@ -83,6 +81,12 @@ public class GameManager : MonoBehaviour
 
         m_countdown.SetActive(true);
         m_pressplaybutton.SetActive(false);
+
+        for (int b = 0; b < m_answerbuttons.Length; b++)
+        {
+            m_gpshowbuttons[b].SetActive(false);
+        }
+
         yield return new WaitForSeconds(m_countdown.GetComponent<Animator>().GetCurrentAnimatorClipInfo(0)[0].clip.length - 0.1f);
         m_countdown.SetActive(false);
 
@@ -185,7 +189,7 @@ public class GameManager : MonoBehaviour
 
         m_scoresubmitter.SetActive(true);
 
-        if (m_numberofwins == 0) { m_scoretext.text = m_numberofwins.ToString(); }
+        if (m_numberofwins == 0) { m_scoretext.text = "FINAL SCORE" + "\n" + m_numberofwins.ToString(); }
         else
         {
             while (m_finalscore < m_numberofwins)
@@ -205,6 +209,13 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+
+        m_playercontroller.ChangeAnimationState(IEntityAnimationState.Idle);
+        m_ai.ChangeAnimationState(IEntityAnimationState.Idle);
+        m_playercontroller.SetPosistion(m_playerstartpos.position);
+        m_ai.SetPosistion(m_aistartpos.position);
+        m_playercontroller.IsDead = false;
+        m_ai.IsDead = false;
 
         if (m_submitscoreanswer == "yes")
         {
